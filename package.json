@@ -1,0 +1,46 @@
+{
+  "name": "mycodehelper",
+  "version": "0.1.13",
+  "description": "AI-powered code assistant with Local AI and Hugging Face support",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "mycodehelper": "bundle/mycodehelper.js"
+  },
+  "scripts": {
+    "start": "node bundle/mycodehelper.js",
+    "setup": "node setup.js",
+    "install": "node install.js",
+    "postinstall": "node install.js"
+  },
+  "files": [
+    "bundle/",
+    "README.md",
+    "QUICKSTART.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "ai",
+    "coding",
+    "assistant",
+    "local-ai",
+    "hugging-face",
+    "privacy",
+    "cli"
+  ],
+  "author": "MyCodeHelper Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "undici": "^6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/mycodehelper.git"
+  },
+  "homepage": "https://github.com/your-username/mycodehelper#readme",
+  "bugs": {
+    "url": "https://github.com/your-username/mycodehelper/issues"
+  }
+}
