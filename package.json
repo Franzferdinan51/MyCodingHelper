@@ -7,16 +7,15 @@
     "node": ">=20.0.0"
   },
   "bin": {
-    "mycodehelper": "bundle/mycodehelper.js"
+    "mycodehelper": "mycodehelper-standalone.py"
   },
   "scripts": {
-    "start": "node bundle/mycodehelper.js",
-    "setup": "node setup.js",
-    "install": "node install.js",
-    "postinstall": "node install.js"
+    "start": "python mycodehelper-standalone.py",
+    "setup": "python mycodehelper-standalone.py --config",
+    "install": "python mycodehelper-standalone.py --help"
   },
   "files": [
-    "bundle/",
+    "mycodehelper-standalone.py",
     "README.md",
     "QUICKSTART.md",
     "LICENSE"
@@ -32,9 +31,7 @@
   ],
   "author": "MyCodeHelper Team",
   "license": "Apache-2.0",
-  "dependencies": {
-    "undici": "^6.0.0"
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/your-username/mycodehelper.git"
