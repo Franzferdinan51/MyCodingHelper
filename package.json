@@ -7,17 +7,23 @@
     "node": ">=20.0.0"
   },
   "bin": {
-    "mycodehelper": "mycodehelper-standalone.py"
+    "mycodehelper": "bundle/mycodehelper-complete.js"
   },
   "scripts": {
-    "start": "python mycodehelper-standalone.py",
-    "setup": "python mycodehelper-standalone.py --config",
-    "install": "python mycodehelper-standalone.py --help"
+    "start": "python mycodehelper-complete.py",
+    "start:node": "node bundle/mycodehelper-complete.js",
+    "setup": "python mycodehelper-complete.py --config"
   },
   "files": [
+    "bundle/",
+    "mycodehelper-complete.py",
     "mycodehelper-standalone.py",
+    "mycodehelper.bat",
+    "setup-env.bat",
+    "setup-env.sh",
     "README.md",
     "QUICKSTART.md",
+    "FEATURE-COMPARISON.md",
     "LICENSE"
   ],
   "keywords": [
@@ -31,7 +37,9 @@
   ],
   "author": "MyCodeHelper Team",
   "license": "Apache-2.0",
-  "dependencies": {},
+  "dependencies": {
+    "undici": "^6.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/your-username/mycodehelper.git"

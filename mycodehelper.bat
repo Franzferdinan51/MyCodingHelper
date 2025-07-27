@@ -7,20 +7,20 @@ echo 🚀 MyCodeHelper - Local AI ^& Hugging Face Edition
 echo ============================================================
 echo.
 
-REM Check if Python is available
-python --version >nul 2>&1
+REM Check if Node.js is installed
+node --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ Error: Python is not installed or not in PATH
+    echo ❌ Error: Node.js is not installed or not in PATH
     echo.
-    echo Please install Python 3.7+ from: https://python.org/
+    echo Please install Node.js 20+ from: https://nodejs.org/
     echo.
     pause
     exit /b 1
 )
 
 REM Check if the main script exists
-if not exist "mycodehelper-standalone.py" (
-    echo ❌ Error: mycodehelper-standalone.py not found
+if not exist "bundle\mycodehelper.js" (
+    echo ❌ Error: mycodehelper.js not found in bundle directory
     echo.
     echo Please ensure you're running this from the mycodehelper directory
     echo.
@@ -29,7 +29,7 @@ if not exist "mycodehelper-standalone.py" (
 )
 
 REM Run the application
-python mycodehelper-standalone.py
+node bundle\mycodehelper.js
 
 REM Keep console open if there was an error
 if %errorlevel% neq 0 (
