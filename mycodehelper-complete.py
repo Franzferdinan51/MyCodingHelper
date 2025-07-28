@@ -38,6 +38,12 @@ from urllib.request import urlopen, Request
 from urllib.error import URLError
 import logging
 
+# Fix Windows console encoding issues
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
 # Enhanced MyCodeHelper JavaScript with full CLI features
 MYCODEHELPER_COMPLETE_JS = '''
 import { createInterface } from 'readline';
@@ -449,7 +455,7 @@ class MyCodeHelperComplete {
       this.client = new LocalAIClient(CONFIG.LOCAL_AI);
       this.providerType = 'Local AI';
     } else {
-      console.log('❌ No AI provider configured!');
+      console.log('[ERROR] No AI provider configured!');
       console.log('Set HUGGING_FACE_API_KEY or LOCAL_AI_API_KEY environment variable.');
       return false;
     }
@@ -482,12 +488,12 @@ class MyCodeHelperComplete {
   async processFile(filepath) {
     const file = FileUtils.readFile(filepath);
     if (!file) {
-      console.log(`❌ Could not read file: ${filepath}`);
+      console.log(`[ERROR] Could not read file: ${filepath}`);
       return;
     }
 
-    console.log(`🔍 Processing file: ${filepath}`);
-    console.log(`📊 Size: ${file.size} bytes`);
+    console.log(`[INFO] Processing file: ${filepath}`);
+    console.log(`[INFO] Size: ${file.size} bytes`);
     console.log('');
 
     const prompt = this.cliParser.args.prompt || `Analyze this ${file.extension} file and provide insights:`;
@@ -508,12 +514,12 @@ class MyCodeHelperComplete {
     // Save output if requested
     if (this.cliParser.args.output) {
       FileUtils.writeFile(this.cliParser.args.output, response);
-      console.log(`💾 Output saved to: ${this.cliParser.args.output}`);
+      console.log(`[INFO] Output saved to: ${this.cliParser.args.output}`);
     }
   }
 
   async processPrompt(prompt) {
-    console.log(`🤖 ${this.providerType}:`);
+    console.log(`[AI] ${this.providerType}:`);
 
     const options = {
       stream: this.cliParser.args.stream,
@@ -535,16 +541,16 @@ class MyCodeHelperComplete {
     // Save output if requested
     if (this.cliParser.args.output) {
       FileUtils.writeFile(this.cliParser.args.output, response);
-      console.log(`💾 Output saved to: ${this.cliParser.args.output}`);
+      console.log(`[INFO] Output saved to: ${this.cliParser.args.output}`);
     }
   }
 
   async analyzeProject() {
-    console.log('🔍 Analyzing codebase...');
+    console.log('[INFO] Analyzing codebase...');
     const files = FileUtils.analyzeCodebase();
     const summary = FileUtils.getProjectSummary();
 
-    console.log('📊 Project Summary:');
+    console.log('[INFO] Project Summary:');
     console.log(`   Files: ${summary.totalFiles}`);
     console.log(`   Languages: ${Object.keys(summary.languages).join(', ')}`);
     console.log(`   Total Lines: ${summary.totalLines}`);
@@ -558,7 +564,7 @@ class MyCodeHelperComplete {
       systemPrompt: `You are a senior software architect. Analyze this codebase and provide insights about architecture, code quality, and recommendations.\\n\\nProject Summary: ${JSON.stringify(summary, null, 2)}`
     };
 
-    console.log(`🤖 ${this.providerType} Analysis:`);
+    console.log(`[AI] ${this.providerType} Analysis:`);
     const response = await this.client.generateContent(prompt, options);
     
     if (!options.stream) {
@@ -568,16 +574,16 @@ class MyCodeHelperComplete {
   }
 
   async interactiveMode() {
-    console.log('🚀 MyCodeHelper Complete v0.1.13 - Local AI & Hugging Face Edition');
+    console.log('>> MyCodeHelper Complete v0.1.13 - Local AI & Hugging Face Edition');
     console.log('============================================================');
-    console.log(`✅ Using ${this.providerType}: ${this.client.config.model}`);
+    console.log(`[OK] Using ${this.providerType}: ${this.client.config.model}`);
     
     if (this.projectContext) {
-      console.log(`📁 Project context loaded: ${this.projectContext.totalFiles} files`);
+      console.log(`[INFO] Project context loaded: ${this.projectContext.totalFiles} files`);
     }
     
-    console.log('\\n💡 Enhanced features: file processing, codebase analysis, streaming');
-    console.log('💡 Type "help" for commands, "exit" to quit.\\n');
+    console.log('\\n[INFO] Enhanced features: file processing, codebase analysis, streaming');
+    console.log('[INFO] Type "help" for commands, "exit" to quit.\\n');
 
     const rl = createInterface({
       input: process.stdin,
@@ -586,7 +592,7 @@ class MyCodeHelperComplete {
 
     const askQuestion = () => {
       return new Promise((resolve) => {
-        rl.question('👤 You: ', resolve);
+        rl.question('You: ', resolve);
       });
     };
 
@@ -595,7 +601,7 @@ class MyCodeHelperComplete {
         const userInput = await askQuestion();
         
         if (userInput.toLowerCase() === 'exit' || userInput.toLowerCase() === 'quit') {
-          console.log('👋 Goodbye!');
+          console.log('Goodbye!');
           break;
         }
 
@@ -606,7 +612,7 @@ class MyCodeHelperComplete {
 
         if (userInput.toLowerCase() === 'clear') {
           this.conversation = [];
-          console.log('🧹 Conversation cleared.');
+          console.log('[INFO] Conversation cleared.');
           continue;
         }
 
@@ -643,7 +649,7 @@ class MyCodeHelperComplete {
           options.systemPrompt += `\\n\\nProject Context: ${JSON.stringify(this.projectContext, null, 2)}`;
         }
 
-        process.stdout.write(`🤖 ${this.providerType}: `);
+        process.stdout.write(`[AI] ${this.providerType}: `);
         const response = await this.client.generateContent(userInput, options);
         
         if (!CONFIG.streaming) {
@@ -655,7 +661,7 @@ class MyCodeHelperComplete {
         this.conversation.push({ role: 'assistant', content: response });
 
       } catch (error) {
-        console.log(`❌ Error: ${error.message}`);
+        console.log(`[ERROR] ${error.message}`);
         console.log('');
       }
     }
@@ -666,11 +672,11 @@ class MyCodeHelperComplete {
   async processFileInteractive(filepath) {
     const file = FileUtils.readFile(filepath);
     if (!file) {
-      console.log(`❌ Could not read file: ${filepath}`);
+      console.log(`[ERROR] Could not read file: ${filepath}`);
       return;
     }
 
-    console.log(`📁 Loaded: ${filepath} (${file.size} bytes)`);
+    console.log(`[INFO] Loaded: ${filepath} (${file.size} bytes)`);
     
     const options = {
       files: [file],
@@ -681,7 +687,7 @@ class MyCodeHelperComplete {
 
     const prompt = `Please analyze the file ${filepath} and provide insights.`;
     
-    process.stdout.write(`🤖 ${this.providerType}: `);
+    process.stdout.write(`[AI] ${this.providerType}: `);
     const response = await this.client.generateContent(prompt, options);
     
     if (!CONFIG.streaming) {
@@ -708,15 +714,15 @@ Provide clear, actionable, and helpful responses. When analyzing code, be specif
     try {
       const config = JSON.parse(FileUtils.readFile(configPath).content);
       Object.assign(CONFIG, config);
-      console.log(`📄 Configuration loaded from: ${configPath}`);
+      console.log(`[INFO] Configuration loaded from: ${configPath}`);
     } catch (error) {
-      console.log(`❌ Could not load config: ${error.message}`);
+      console.log(`[ERROR] Could not load config: ${error.message}`);
     }
   }
 
   showHelp() {
     console.log(`
-🚀 MyCodeHelper Complete - Full-Featured AI Code Assistant
+>> MyCodeHelper Complete - Full-Featured AI Code Assistant
 
 USAGE:
   mycodehelper [OPTIONS] [PROMPT]
@@ -764,7 +770,7 @@ For more information, visit: https://github.com/your-repo/mycodehelper
   }
 
   showInteractiveHelp() {
-    console.log('📖 Interactive Commands:');
+    console.log('[HELP] Interactive Commands:');
     console.log('========================');
     console.log('  help                     Show this help message');
     console.log('  clear                    Clear conversation history');
@@ -773,7 +779,7 @@ For more information, visit: https://github.com/your-repo/mycodehelper
     console.log('  file <path>              Load and analyze a file');
     console.log('  exit                     Exit the application');
     console.log('');
-    console.log('💡 Examples:');
+    console.log('[HELP] Examples:');
     console.log('  "How do I create a React component?"');
     console.log('  "file src/app.js"');
     console.log('  "Explain the MVC pattern"');
@@ -782,7 +788,7 @@ For more information, visit: https://github.com/your-repo/mycodehelper
   }
 
   showStatus() {
-    console.log('⚙️ MyCodeHelper Status:');
+    console.log('[STATUS] MyCodeHelper Status:');
     console.log('======================');
     console.log(`Provider: ${this.providerType}`);
     console.log(`Model: ${this.client.config.model}`);
@@ -798,12 +804,12 @@ For more information, visit: https://github.com/your-repo/mycodehelper
 
 // Handle process termination
 process.on('SIGINT', () => {
-  console.log('\\n👋 Goodbye!');
+  console.log('\\nGoodbye!');
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('\\n👋 Goodbye!');
+  console.log('\\nGoodbye!');
   process.exit(0);
 });
 
@@ -814,7 +820,7 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error('💥 Fatal error:', error.message);
+  console.error('[FATAL]', error.message);
   process.exit(1);
 });
 '''
@@ -880,29 +886,29 @@ Environment Variables:
                 version = result.stdout.strip()
                 major_version = int(version[1:].split('.')[0])
                 if major_version >= 20:
-                    print(f"✅ Node.js {version} detected")
+                    print(f"[OK] Node.js {version} detected")
                     return True
                 else:
-                    print(f"❌ Node.js {version} found, but version 20+ required")
+                    print(f"[ERROR] Node.js {version} found, but version 20+ required")
                     return False
         except FileNotFoundError:
             pass
         
-        print("❌ Node.js not found!")
-        print("📥 Install Node.js 20+ from: https://nodejs.org/")
+        print("[ERROR] Node.js not found!")
+        print("[INFO] Install Node.js 20+ from: https://nodejs.org/")
         return False
 
     def setup_ai_config(self):
         """Interactive AI provider configuration"""
-        print("🤖 AI Provider Configuration")
+        print("[SETUP] AI Provider Configuration")
         print("=" * 30)
         
         # Check existing environment variables
         if os.getenv('HUGGING_FACE_API_KEY'):
-            print("✅ Hugging Face configuration found")
+            print("[OK] Hugging Face configuration found")
             return True
         if os.getenv('LOCAL_AI_API_KEY'):
-            print("✅ Local AI configuration found")  
+            print("[OK] Local AI configuration found")  
             return True
         
         print("No AI provider configured!")
@@ -915,7 +921,7 @@ Environment Variables:
             choice = input("\\nChoose option (1-3): ").strip()
             
             if choice == "1":
-                print("\\n🤗 Hugging Face Setup")
+                print("\\n[SETUP] Hugging Face Setup")
                 print("Get token from: https://huggingface.co/settings/tokens")
                 token = input("Enter Hugging Face API token: ").strip()
                 if token:
@@ -923,11 +929,11 @@ Environment Variables:
                     model = input("Model (default: microsoft/DialoGPT-large): ").strip()
                     if model:
                         os.environ['HUGGING_FACE_MODEL'] = model
-                    print("✅ Hugging Face configured")
+                    print("[OK] Hugging Face configured")
                     return True
                     
             elif choice == "2":
-                print("\\n🏠 Local AI Setup")
+                print("\\n[SETUP] Local AI Setup")
                 base_url = input("Base URL (default: http://localhost:8080): ").strip()
                 api_key = input("API key (default: local-key): ").strip()
                 model = input("Model (default: llama-3.1-8b): ").strip()
@@ -936,11 +942,11 @@ Environment Variables:
                 os.environ['LOCAL_AI_API_KEY'] = api_key or 'local-key'
                 if model:
                     os.environ['LOCAL_AI_MODEL'] = model
-                print("✅ Local AI configured")
+                print("[OK] Local AI configured")
                 return True
                 
             elif choice == "3":
-                print("⏭️ Skipping configuration")
+                print("[INFO] Skipping configuration")
                 return True
                 
             else:
@@ -948,7 +954,7 @@ Environment Variables:
 
     def run_mycodehelper(self, args):
         """Create and run the complete MyCodeHelper"""
-        print("🚀 Starting MyCodeHelper Complete...")
+        print("[INFO] Starting MyCodeHelper Complete...")
         
         # Create temporary directory
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -997,21 +1003,21 @@ Environment Variables:
             try:
                 subprocess.run(node_args, cwd=temp_dir)
             except KeyboardInterrupt:
-                print("\\n👋 Goodbye!")
+                print("\\nGoodbye!")
             except Exception as e:
-                print(f"❌ Error running MyCodeHelper: {e}")
+                print(f"[ERROR] Error running MyCodeHelper: {e}")
 
     def show_version(self):
         print("MyCodeHelper Complete v0.1.13")
         print("Full-featured AI code assistant")
         print("Local AI & Hugging Face Edition")
         print("\\nFeatures:")
-        print("  ✅ Interactive and non-interactive modes")
-        print("  ✅ File processing and codebase analysis")
-        print("  ✅ Command-line arguments")
-        print("  ✅ Streaming responses")
-        print("  ✅ Project context understanding")
-        print("  ✅ Multiple output formats")
+        print("  [OK] Interactive and non-interactive modes")
+        print("  [OK] File processing and codebase analysis")
+        print("  [OK] Command-line arguments")
+        print("  [OK] Streaming responses")
+        print("  [OK] Project context understanding")
+        print("  [OK] Multiple output formats")
 
     def main(self):
         args = self.parse_arguments()
@@ -1043,7 +1049,7 @@ if __name__ == "__main__":
         launcher = MyCodeHelperLauncher()
         launcher.main()
     except KeyboardInterrupt:
-        print("\\n👋 Goodbye!")
+        print("\\nGoodbye!")
     except Exception as e:
-        print(f"\\n💥 Unexpected error: {e}")
+        print(f"\\n[FATAL] Unexpected error: {e}")
         sys.exit(1)
